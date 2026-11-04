@@ -1,0 +1,10 @@
+Question about ${company}
+
+Hi ${first_name},
+
+I read ${research}. ${reason}
+
+Would you be the right person to ask about your team's work, or is there someone else I should contact?
+
+Thanks,
+${sender_name}
