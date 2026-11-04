@@ -1,0 +1,10 @@
+Following up: ${company}
+
+Hi ${first_name},
+
+I wanted to follow up on my earlier note about ${company}. ${reason}
+
+If someone else handles this, I'd appreciate being pointed in the right direction.
+
+Thanks,
+${sender_name}
