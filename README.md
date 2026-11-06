@@ -62,6 +62,19 @@ reply by hand, and `import-reply message.eml` reads an email I have exported fro
 mailbox. There is no automatic inbox checking or background outreach sender. I mark an
 interview with `interview 1` after recording a reply.
 
+## Campaign performance
+
+I can compare outreach messages by template and audience segment to see where I might improve. I keep one anonymous row per sent message in a CSV file (a simple spreadsheet table), with a 1 or 0 for each observed open, click, reply and conversion. A conversion is the outcome I choose for the campaign, such as an interview. These are manual observations: the notebook does not secretly track readers or automatically collect opens and clicks.
+
+To try the fictional example, install the reporting packages and run:
+
+```sh
+python3 -m pip install -r requirements-reporting.txt
+python3 -m outreach_crm.campaign examples/campaign.csv --previous-start 2026-01-01 --previous-end 2026-01-31 --start 2026-02-01 --end 2026-02-28 --output /tmp/campaign-report
+```
+
+Open `/tmp/campaign-report/campaign-summary.xlsx` for the comparison and breakdown, or `campaign-summary.pptx` for an editable PowerPoint slide. Each rate is the number of sends with that outcome divided by all sends in that period. The default benchmarks are illustrative targets, not industry averages; I can set my own using `--benchmark-open 0.5`, for example. The [campaign guide](docs/campaign-reporting.md) explains the columns, comparisons and limitations.
+
 ## Weekly reminder report
 
 I can also receive a weekly email with my contact counts and the number of follow-ups due or overdue. It appends the same totals to a CSV file, a simple table I can open in a spreadsheet. The report contains counts, not contact names. It helps me see when reminders are piling up without opening the notebook every day.
@@ -81,7 +94,7 @@ python3 -m unittest discover -s tests -v
 python3 scripts/demo.py
 ```
 
-The 36 tests cover saved records, personalized previews, real local mail delivery,
+The 40 tests cover saved records, personalized previews, real local mail delivery,
 follow-ups, replies, duplicate protection, interrupted sends credential lookup, report counts and the workflow export.
-GitHub Actions runs the same checks on Python 3.9, 3.12 and 3.13. The CRM and its tests use only Python's built-in modules; the optional report runs in a Docker container. The local tests exercise the
+GitHub Actions runs the same checks on Python 3.9, 3.12 and 3.13. The CRM uses Python’s built-in modules; campaign exports use the packages in `requirements-reporting.txt`, and the optional reminder report runs in a Docker container. The local tests exercise the
 mail protocol without sending to Gmail or proving that an external inbox received it.
