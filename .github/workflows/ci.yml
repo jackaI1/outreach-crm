@@ -26,4 +26,5 @@ jobs:
       - name: Build n8n image and import workflow
         run: |
           docker build -f automation/Dockerfile -t outreach-n8n .
-          docker run --rm -v "$PWD/automation/weekly-metrics.json:/tmp/workflow.json:ro" outreach-n8n import:workflow --input=/tmp/workflow.json
+          python3 -c 'import json; json.dump([json.load(open("automation/weekly-metrics.json"))], open("/tmp/workflow.json", "w"))'
+          docker run --rm -v "/tmp/workflow.json:/tmp/workflow.json:ro" outreach-n8n import:workflow --input=/tmp/workflow.json
