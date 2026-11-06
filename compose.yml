@@ -1,0 +1,20 @@
+services:
+  n8n:
+    build:
+      context: .
+      dockerfile: automation/Dockerfile
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      TZ: ${TZ:-America/Toronto}
+      GENERIC_TIMEZONE: ${TZ:-America/Toronto}
+      NODES_EXCLUDE: '[]'
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false'
+      REPORT_FROM: ${REPORT_FROM:?Set REPORT_FROM in .env}
+      REPORT_TO: ${REPORT_TO:?Set REPORT_TO in .env}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ${CRM_DIR:?Set CRM_DIR in .env}:/crm:ro
+      - ${REPORT_DIR:?Set REPORT_DIR in .env}:/reports
+volumes:
+  n8n_data:

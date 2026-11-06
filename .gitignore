@@ -9,3 +9,7 @@ __pycache__/
 *.eml
 data/
 .coverage
+
+# Local workflow settings and reports
+.env
+reports/
