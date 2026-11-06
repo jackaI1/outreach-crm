@@ -19,3 +19,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m unittest discover -s tests -v
       - run: python scripts/demo.py
+  workflow-import:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build n8n image and import workflow
+        run: |
+          docker build -f automation/Dockerfile -t outreach-n8n .
+          python3 -c 'import json; json.dump([json.load(open("automation/weekly-metrics.json"))], open("/tmp/workflow.json", "w"))'
+          docker run --rm -v "/tmp/workflow.json:/tmp/workflow.json:ro" outreach-n8n import:workflow --input=/tmp/workflow.json

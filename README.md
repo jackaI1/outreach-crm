@@ -59,8 +59,14 @@ exported replies or credentials in this repository.
 
 `due` shows reminders when I run it. `reply 1 --note "A fictional reply"` records a
 reply by hand, and `import-reply message.eml` reads an email I have exported from my
-mailbox. There is no automatic inbox checking or background sender. I mark an
+mailbox. There is no automatic inbox checking or background outreach sender. I mark an
 interview with `interview 1` after recording a reply.
+
+## Weekly reminder report
+
+I can also receive a weekly email with my contact counts and the number of follow-ups due or overdue. It appends the same totals to a CSV file, a simple table I can open in a spreadsheet. The report contains counts, not contact names. It helps me see when reminders are piling up without opening the notebook every day.
+
+To set it up, I run n8n, a tool that connects steps in an automated workflow, with Docker Compose. I import the included workflow, connect my email account and activate it. The computer must be running at the scheduled time. The [weekly report setup](docs/weekly-report.md) has the exact steps and explains retries and privacy.
 
 ## Design and checks
 
@@ -75,8 +81,7 @@ python3 -m unittest discover -s tests -v
 python3 scripts/demo.py
 ```
 
-The 32 tests cover saved records, personalized previews, real local mail delivery,
-follow-ups, replies, duplicate protection, interrupted sends and credential lookup.
-GitHub Actions runs the same checks on Python 3.9, 3.12 and 3.13. I use only Python's
-built-in modules; there are no packages to install. The local tests exercise the
+The 36 tests cover saved records, personalized previews, real local mail delivery,
+follow-ups, replies, duplicate protection, interrupted sends credential lookup, report counts and the workflow export.
+GitHub Actions runs the same checks on Python 3.9, 3.12 and 3.13. The CRM and its tests use only Python's built-in modules; the optional report runs in a Docker container. The local tests exercise the
 mail protocol without sending to Gmail or proving that an external inbox received it.

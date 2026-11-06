@@ -1,0 +1,91 @@
+{
+  "name": "Outreach weekly metrics",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Every Monday",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "python3 /opt/outreach/metrics.py"
+      },
+      "id": "metrics",
+      "name": "Snapshot and append CSV",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.REPORT_FROM }}",
+        "toEmail": "={{ $env.REPORT_TO }}",
+        "subject": "=Outreach weekly metrics: {{ JSON.parse($json.stdout).date }}",
+        "emailFormat": "text",
+        "text": "=Outreach notebook snapshot for {{ JSON.parse($json.stdout).date }}\n\nTotal contacts: {{ JSON.parse($json.stdout).total }}\nResearched: {{ JSON.parse($json.stdout).researched }}\nEmailed: {{ JSON.parse($json.stdout).emailed }}\nFollowed up: {{ JSON.parse($json.stdout).followed_up }}\nReplied: {{ JSON.parse($json.stdout).replied }}\nInterview: {{ JSON.parse($json.stdout).interview }}\nReminders due (including overdue): {{ JSON.parse($json.stdout).due }}\nOverdue: {{ JSON.parse($json.stdout).overdue }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Email summary",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every Monday": {
+      "main": [
+        [
+          {
+            "node": "Snapshot and append CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snapshot and append CSV": {
+      "main": [
+        [
+          {
+            "node": "Email summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto"
+  },
+  "active": false,
+  "pinData": {},
+  "tags": []
+}
