@@ -124,12 +124,27 @@ class WeeklyReportTests(unittest.TestCase):
             self.assertEqual([c.value for c in totals[0][1:len(measures)+1]],
                              [sum(v[j] for v in expected.values()) for j in range(len(measures))])
 
+    def assert_chart(self, w):
+        expected=defaultdict(lambda:[0,0])
+        for row in w['Targets'].iter_rows(min_row=2,values_only=True):
+            expected[row[2]][0]+=row[9]
+            expected[row[2]][1]+=row[10]
+        for j,series in enumerate(w['Weekly']._charts[0].series):
+            category=series.cat.numRef or series.cat.strRef
+            def values(formula):
+                sheet,area=formula.split('!')
+                return [c.value for row in w[sheet.strip("'")][area] for c in row]
+            labels=values(category.f)
+            self.assertEqual(set(labels),set(expected))
+            self.assertEqual(values(series.val.numRef.f),[expected[label][j] for label in labels])
+
     @unittest.skipUnless(os.environ.get('RUN_LIBREOFFICE')=='1','Headless LibreOffice runs in Linux CI')
     def test_headless_refresh_lookup_results_and_real_input_changes(self):
         output=self.recalc(self.source,'recalculated.xlsx')
         w=self.reopen(output,True)
         self.assert_lookups(w)
         self.assert_pivots(w)
+        self.assert_chart(w)
         self.assertFalse([(s.title,c.coordinate,c.value) for s in w for row in s for c in row if c.data_type=='e'])
         self.assertEqual([w['Weekly'][c].value for c in ('B5','B6','B7','B8','B9','E8')],[7,3,1,3,1,.6])
         # Input mutation proves both lookup engines recalculate and the owner
@@ -149,8 +164,10 @@ class WeeklyReportTests(unittest.TestCase):
         updated=self.reopen(self.recalc(self.root/'changed.xlsx','changed-result.xlsx'),True)
         self.assert_lookups(updated)
         self.assert_pivots(updated)
+        self.assert_chart(updated)
         self.assertEqual(updated['Targets']['F2'].value,'Robin')
-        self.assertEqual(updated['Funnel']['I2'].value,'Robin')
+        opportunity=next(r for r in updated['Funnel'].iter_rows(min_row=2,values_only=True) if r[0]=='O1')
+        self.assertEqual(opportunity[8],'Robin')
         self.assertEqual(updated['Weekly']['B6'].value,2)
         # Duplicate and blank reference values must stay visible after engine recalculation.
         # Extend bounded lookups by regenerating from a new snapshot, the supported workflow.
@@ -163,3 +180,12 @@ class WeeklyReportTests(unittest.TestCase):
         self.assert_pivots(dup)
         self.assertEqual(dup['Targets']['F2'].value,'DUPLICATE')
         self.assertEqual(dup['Targets']['F5'].value,'MISSING')
+        blank=self.reopen()
+        blank['Reference']['C2']=None
+        blank['Weekly']['D8']=0
+        blank.save(self.root/'blank.xlsx')
+        blank_result=self.reopen(self.recalc(self.root/'blank.xlsx','blank-result.xlsx'),True)
+        self.assert_lookups(blank_result)
+        self.assert_pivots(blank_result)
+        self.assertEqual(blank_result['Targets']['F2'].value,'MISSING')
+        self.assertEqual(blank_result['Weekly']['E8'].value,'SET POSITIVE GOAL')
