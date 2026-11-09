@@ -50,15 +50,16 @@ def pivot(wb, source, rows, destination, start, group, measures, name):
         for j, measure in enumerate(measures):
             totals[str(row[group])][j] += row[measure]
     dest = wb[destination]
-    for j, value in enumerate([headers[group], *[headers[m] for m in measures]], 1):
-        dest.cell(start, j, value)
-    for offset, value in enumerate(groups, 1):
+    dest.cell(start, 2, 'Values')
+    for j, value in enumerate([headers[group], *[headers[m]+' total' for m in measures]], 1):
+        dest.cell(start+1, j, value)
+    for offset, value in enumerate(groups, 2):
         for j, v in enumerate([value, *totals[value]], 1):
             cell = dest.cell(start+offset, j, v)
             if isinstance(v, str):
                 cell.data_type = 's'
     for j, value in enumerate(['Grand Total', *[sum(r[m] for r in rows) for m in measures]], 1):
-        dest.cell(start+len(groups)+1, j, value)
+        dest.cell(start+len(groups)+2, j, value)
     pfields = [PivotField(axis='axisRow', defaultSubtotal=False,
                          items=[FieldItem(x=i) for i in range(len(groups))]) if i == group
                else PivotField(dataField=i in measures, defaultSubtotal=False) for i in range(len(headers))]
@@ -72,8 +73,8 @@ def pivot(wb, source, rows, destination, start, group, measures, name):
     # identities so hashing stays stable and each relationship reaches its cache.
     cache.records._id = cache_id
     table = TableDefinition(name=name, cacheId=cache_id, dataCaption='Values',
-        location=Location(ref=f'A{start}:{dest.cell(1,len(measures)+1).column_letter}{start+len(groups)+1}',
-                          firstHeaderRow=1, firstDataRow=1, firstDataCol=1),
+        location=Location(ref=f'A{start}:{dest.cell(1,len(measures)+1).column_letter}{start+len(groups)+2}',
+                          firstHeaderRow=1, firstDataRow=2, firstDataCol=1),
         pivotFields=pfields, rowFields=[RowColField(x=group)],
         rowItems=[RowColItem(x=[Index(v=i)]) for i in range(len(groups))] + [RowColItem(t='grand', x=[Index(v=0)])],
         colFields=[RowColField(x=-2)],
@@ -82,7 +83,7 @@ def pivot(wb, source, rows, destination, start, group, measures, name):
         rowGrandTotals=True, colGrandTotals=True, compact=False, compactData=False, gridDropZones=False)
     table.cache = cache
     dest.add_pivot(table)
-    return start + len(groups) + 4
+    return start + len(groups) + 5
 
 
 def lookup(row, output, end, modern=False, key_col='D'):
@@ -187,8 +188,8 @@ def export(book, output, start, end, goal):
     chart = BarChart()
     chart.title = 'Covered and engaged targets by segment'
     groups = len({r[2] for r in tdata})
-    chart.add_data(Reference(summary, min_col=2, max_col=3, min_row=13, max_row=13+groups), titles_from_data=True)
-    chart.set_categories(Reference(summary, min_col=1, min_row=14, max_row=13+groups))
+    chart.add_data(Reference(summary, min_col=2, max_col=3, min_row=14, max_row=14+groups), titles_from_data=True)
+    chart.set_categories(Reference(summary, min_col=1, min_row=15, max_row=14+groups))
     chart.y_axis.title = 'Targets'
     summary.add_chart(chart, 'G12')
     for ws in wb:
@@ -210,6 +211,18 @@ def export(book, output, start, end, goal):
             table.tableStyleInfo = TableStyleInfo(name='TableStyleMedium2', showRowStripes=True)
             ws.add_table(table)
     summary.column_dimensions['A'].width = 29
+    for p in summary._pivots:
+        from openpyxl.utils.cell import range_boundaries
+        left, top, right, bottom = range_boundaries(p.location.ref)
+        for cells in summary.iter_rows(min_row=top+1, max_row=top+1, min_col=left, max_col=right):
+            for c in cells:
+                c.fill = PatternFill('solid', fgColor='243247')
+                c.font = Font(name='Arial', size=10, bold=True, color='FFFFFF')
+                c.alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
+        summary.row_dimensions[top+1].height = 30
+        for cells in summary.iter_rows(min_row=bottom, max_row=bottom, min_col=left, max_col=right):
+            for c in cells:
+                c.font = Font(name='Arial', size=10, bold=True, color='243247')
     summary['A2'].font = Font(name='Arial', size=16, bold=True, color='243247')
     targets.column_dimensions['B'].width = 33
     targets.column_dimensions['N'].width = 55
