@@ -5,6 +5,7 @@ from pathlib import Path
 
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, Reference
+from openpyxl.chart.series import SeriesLabel
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -190,6 +191,8 @@ def export(book, output, start, end, goal):
     groups = len({r[2] for r in tdata})
     chart.add_data(Reference(summary, min_col=2, max_col=3, min_row=14, max_row=14+groups), titles_from_data=True)
     chart.set_categories(Reference(summary, min_col=1, min_row=15, max_row=14+groups))
+    for series, title in zip(chart.series, ('Covered', 'Engaged')):
+        series.tx = SeriesLabel(v=title)
     chart.y_axis.title = 'Targets'
     summary.add_chart(chart, 'G12')
     for ws in wb:
