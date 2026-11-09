@@ -20,6 +20,28 @@ jobs:
       - run: python -m pip install -r requirements-reporting.txt
       - run: python -m unittest discover -s tests -v
       - run: python scripts/demo.py
+  excel-refresh:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install current headless Calc and UNO bridge
+        run: |
+          sudo add-apt-repository -y ppa:libreoffice/ppa
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libreoffice-calc python3-uno python3-openpyxl
+          libreoffice --version
+      - name: Reopen, refresh, recalculate and reconcile Excel reports
+        env:
+          RUN_LIBREOFFICE: '1'
+        run: /usr/bin/python3 -m unittest discover -s tests -p test_weekly_report.py -v
+      - name: Produce downloadable fictional weekly report
+        run: |
+          /usr/bin/python3 scripts/target_demo.py --output /tmp/target-demo
+          /usr/bin/python3 scripts/recalculate_report.py /tmp/target-demo/weekly.xlsx /tmp/target-demo/weekly-recalculated.xlsx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fictional-weekly-report
+          path: /tmp/target-demo/weekly-recalculated.xlsx
   workflow-import:
     runs-on: ubuntu-24.04
     steps:
