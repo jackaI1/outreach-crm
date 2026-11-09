@@ -1,0 +1,13 @@
+{
+  "partner-b.xlsx": {
+    "sheet": "Partner leads",
+    "header_row": 3,
+    "columns": {
+      "target_id": "List ref",
+      "company": "Business",
+      "territory": "Area",
+      "contact": "Person email",
+      "segment": "Focus"
+    }
+  }
+}

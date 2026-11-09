@@ -6,7 +6,9 @@ I built a small contact notebook because I was cold-emailing companies and losin
 
 My research notes, sent emails and reminders used to be separate. I wanted to open
 one place and see who I planned to contact, what I had said and who had replied.
-This is my personal project for keeping that information together. CRM means
+This is my personal project for keeping that information together. I can also compare
+partner target lists with offline CRM report exports, review uncertain company
+matches and make a weekly Excel report. It has no live Salesforce connection. CRM means
 customer relationship management; here it is simply my outreach notebook.
 
 I save a company, the research that caught my attention and the person I want to
@@ -62,6 +64,31 @@ reply by hand, and `import-reply message.eml` reads an email I have exported fro
 mailbox. There is no automatic inbox checking or background outreach sender. I mark an
 interview with `interview 1` after recording a reply.
 
+## Check target lists and make a weekly Excel report
+
+I added a separate target notebook because I wanted to learn how to compare company
+lists without connecting to a company system. It reads CSV and Excel partner lists
+and fictional Salesforce-shaped Account, Contact and Opportunity report exports.
+It checks company names, shows uncertain matches for my review, assigns owners from
+an editable territory table and flags conflicting contacts, missing owners and old
+activity. I record outreach and replies, and new opportunities count once toward
+my weekly goal.
+
+```sh
+python3 -m pip install -r requirements-reporting.txt
+python3 scripts/target_demo.py --output /tmp/target-demo
+python3 -m outreach_crm.target_audit --db /tmp/target-demo/targets.sqlite3 review
+```
+
+The example saves seven fictional targets, three entries to review and
+`/tmp/target-demo/weekly.xlsx`. The workbook groups coverage by segment and owner,
+shows new opportunities and progress toward a goal, and includes a linked chart.
+Its native PivotTables are spreadsheet summaries I can refresh. XLOOKUP and
+INDEX/MATCH formulas find owner and territory details from a reference sheet;
+missing or duplicate keys stay visible. Nothing is sent or changed in Salesforce.
+The [target-list guide](docs/target-audit.md) has the import command, review and
+status steps, report definitions, Excel refresh instructions and limitations.
+
 ## Campaign performance
 
 I can compare outreach messages by template and audience segment to see where I might improve. I keep one anonymous row per sent message in a CSV file (a simple spreadsheet table), with a 1 or 0 for each observed open, click, reply and conversion. A conversion is the outcome I choose for the campaign, such as an interview. These are manual observations: the notebook does not secretly track readers or automatically collect opens and clicks.
@@ -94,7 +121,12 @@ python3 -m unittest discover -s tests -v
 python3 scripts/demo.py
 ```
 
-The 40 tests cover saved records, personalized previews, real local mail delivery,
+The 64 tests cover saved records, personalized previews, real local mail delivery,
 follow-ups, replies, duplicate protection, interrupted sends credential lookup, report counts and the workflow export.
-GitHub Actions runs the same checks on Python 3.9, 3.12 and 3.13. The CRM uses Python’s built-in modules; campaign exports use the packages in `requirements-reporting.txt`, and the optional reminder report runs in a Docker container. The local tests exercise the
+The target tests also cover ambiguous and duplicate matches, conflicting records,
+atomic imports, saved reviews and status history, repeated opportunity imports,
+and native Excel caches. GitHub Actions runs the suite on Python 3.9, 3.12 and 3.13.
+One workbook test runs in a separate Linux job with headless LibreOffice: it
+recalculates lookups, refreshes all three pivots and compares their results with
+independent totals, then changes inputs and checks again. The CRM uses Python’s built-in modules; campaign exports use the packages in `requirements-reporting.txt`, and the optional reminder report runs in a Docker container. The local tests exercise the
 mail protocol without sending to Gmail or proving that an external inbox received it.

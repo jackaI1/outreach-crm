@@ -1,0 +1,5 @@
+Opportunity ID,Account ID,Opportunity Name,Created Date,Amount,Stage
+O1,A1,Fictional sensor trial,2026-02-03,1200,Qualification
+O2,A2,Fictional optical trial,2026-02-08,2400,Discovery
+O3,A5,Fictional packaging trial,2026-02-01,900,Discovery
+O4,A3,Fictional review case,2026-02-04,700,Discovery
