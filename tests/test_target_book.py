@@ -125,3 +125,9 @@ class TargetBookTests(unittest.TestCase):
         targets[0]['company']='Another business'
         with self.assertRaisesRegex(ValueError,'changed company'):
             self.reimport(targets=targets)
+
+    def test_unmatched_target_recency_includes_saved_outreach(self):
+        self.assertIn('stalled',self.book.rows()[3]['flags'])
+        self.book.advance('T4','outreach','2026-02-08','Fictional first contact without a CRM account')
+        self.assertNotIn('stalled',self.book.rows()[3]['flags'])
+        self.assertIn('stalled',self.book.rows('2026-03-11')[3]['flags'])

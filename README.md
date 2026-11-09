@@ -121,7 +121,7 @@ python3 -m unittest discover -s tests -v
 python3 scripts/demo.py
 ```
 
-The 63 tests cover saved records, personalized previews, real local mail delivery,
+The 64 tests cover saved records, personalized previews, real local mail delivery,
 follow-ups, replies, duplicate protection, interrupted sends credential lookup, report counts and the workflow export.
 The target tests also cover ambiguous and duplicate matches, conflicting records,
 atomic imports, saved reviews and status history, repeated opportunity imports,

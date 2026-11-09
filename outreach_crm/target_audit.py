@@ -97,6 +97,7 @@ def audit(targets, accounts, contacts, opportunities, territories, today, stale_
     if stale_days < 0:
         raise ValueError('stale days must be nonnegative')
     counts = Counter(key(t.get('company')) for t in targets)
+    account_ids = Counter(a['id'] for a in accounts)
     result = []
     for target in targets:
         name = key(target.get('company'))
@@ -121,7 +122,7 @@ def audit(targets, accounts, contacts, opportunities, territories, today, stale_
             match = 'review'
             flags.append('duplicate target')
         ids = [a['id'] for a in candidates]
-        if any(sum(a['id'] == ident for a in accounts) > 1 for ident in ids):
+        if any(account_ids[ident] > 1 for ident in ids):
             match = 'review'
             flags.append('duplicate account ID')
         row = {'target': target, 'match': match, 'candidates': sorted(set(ids)), 'flags': flags,
@@ -144,6 +145,8 @@ def audit(targets, accounts, contacts, opportunities, territories, today, stale_
                 elif folded(account.get(field)) != folded(row.get(field)):
                     flags.append(field + ' conflict')
             email = folded(target.get('contact'))
+            if not email:
+                flags.append('target contact missing')
             found = [c for c in contacts if folded(c.get('email')) == email and email]
             if email and not any(c.get('account_id') == account['id'] for c in found):
                 flags.append('contact missing')
@@ -161,6 +164,10 @@ def audit(targets, accounts, contacts, opportunities, territories, today, stale_
             except ValueError:
                 flags.append('invalid activity date')
             row['opportunities'] = [o for o in opportunities if o.get('account_id') == account['id']]
+        elif match == 'unmatched':
+            flags.append('stalled')
+        else:
+            flags.append('activity unverified')
         result.append(row)
     links = Counter(r.get('account_id') for r in result if r.get('account_id'))
     for row in result:
