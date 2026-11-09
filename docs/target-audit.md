@@ -1,6 +1,6 @@
 # Target lists and the weekly workbook
 
-I wanted to learn how to compare a partner's company list with my outreach notebook without connecting to a company system. These examples use invented companies, owners and opportunities. They read report exports shaped like Salesforce Account, Contact and Opportunity reports. There is no live Salesforce connection, login, API call or automatic sending.
+I built a company-list checker and weekly spreadsheet because my outreach notebook could not compare incoming lists with saved account reports or show which companies still needed an owner. These examples use invented companies, owners and opportunities. They read report exports shaped like Salesforce Account, Contact and Opportunity reports. There is no live Salesforce connection, login, API call or automatic sending.
 
 ## Try a complete example
 
